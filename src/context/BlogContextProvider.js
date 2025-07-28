@@ -1,5 +1,5 @@
 "use client";
-import { createContext, useContext, useState } from "react";
+import { useState } from "react";
 import blogContext from "./blogContext";
 const BlogContextProvider = ({children}) => {
     const fixedBlogs = [

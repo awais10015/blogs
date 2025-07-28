@@ -5,7 +5,7 @@ import { useMotionValue, useSpring } from "motion/react";
 import { useEffect, useRef } from "react";
 
 import { cn } from "@/lib/utils";
-import { div } from "motion/react-client";
+
 
 const MOVEMENT_DAMPING = 1400;
 
@@ -38,7 +38,6 @@ const GLOBE_CONFIG: COBEOptions = {
 };
 
 export function Globe({
-  className,
   config = GLOBE_CONFIG,
 }: {
   className?: string;

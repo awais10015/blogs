@@ -17,10 +17,10 @@ const Page = () => {
           Empower Your Ideas. Build the Future.
         </h1>
         <p className="text-lg sm:text-2xl font-medium text-[#2E4F21] mt-4">
-          Welcome to MyApp — the ultimate platform designed to turn your vision
-          into reality. Whether you're a creator, developer, or entrepreneur, we
+          Welcome to MyApp  the ultimate platform designed to turn your vision
+          into reality Whether you are a creator developer or entrepreneur we
           help you unlock your potential with powerful tools and seamless
-          experiences.
+          experiences
         </p>
 
         <div className="mt-6">
