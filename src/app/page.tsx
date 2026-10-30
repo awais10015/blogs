@@ -7,9 +7,10 @@ import { buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import blogContext from "@/context/blogContext";
 import PostCard from "@/components/PostCard";
+import type { BlogContextValue } from "@/types/post";
 
 const Page = () => {
-  const { blogs } = useContext(blogContext);
+  const { blogs } = useContext(blogContext) as BlogContextValue;
   const featured = blogs
     .filter((blog) => blog.status === "published")
     .slice(0, 3);
