@@ -1,5 +1,6 @@
 @import "tailwindcss";
 @import "tw-animate-css";
+@plugin "@tailwindcss/typography";
 
 @custom-variant dark (&:is(.dark *));
 
@@ -122,10 +123,15 @@ body {
     @apply border-border outline-ring/50;
   }
   body {
-    @apply bg-background text-foreground;
+    @apply text-foreground;
   }
 }
 
+
+.ProseMirror {
+  outline: none;
+  min-height: 6rem;
+}
 
 .ProseMirror p.is-empty::before {
   content: attr(data-placeholder);

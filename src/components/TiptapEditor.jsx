@@ -7,10 +7,11 @@ import Placeholder from "@tiptap/extension-placeholder";
 
 const TiptapEditor = ({ description, setDescription }) => {
   const editor = useEditor({
+    immediatelyRender: false,
     extensions: [
       StarterKit,
       Placeholder.configure({
-        placeholder: "Add Blog Description here...",
+        placeholder: "Add blog description here...",
         showOnlyWhenEditable: true,
         showOnlyCurrent: false,
       }),
@@ -21,18 +22,26 @@ const TiptapEditor = ({ description, setDescription }) => {
     },
   });
 
+  React.useEffect(() => {
+    if (!editor) return;
+    if (description === "" && editor.getText().trim() !== "") {
+      editor.commands.setContent("");
+    }
+  }, [description, editor]);
+
   if (!editor) return null;
 
   return (
-    <div className="w-full placeholder:text-white">
-      
-      <div className="flex gap-2 border p-2 rounded-t bg-gray-100">
+    <div className="w-full">
+      <div className="flex gap-2 border border-neutral-200 p-2 rounded-t-lg bg-neutral-50">
         <button
           type="button"
           onClick={() => editor.chain().focus().toggleBold().run()}
           className={`${
-            editor.isActive("bold") ? "bg-[#2E4F21] text-white" : "bg-white"
-          } px-2 py-1 border rounded`}
+            editor.isActive("bold")
+              ? "bg-[#2E4F21] text-white"
+              : "bg-white text-[#1f3318]"
+          } px-2 py-1 border border-neutral-200 rounded`}
         >
           B
         </button>
@@ -40,8 +49,10 @@ const TiptapEditor = ({ description, setDescription }) => {
           type="button"
           onClick={() => editor.chain().focus().toggleItalic().run()}
           className={`${
-            editor.isActive("italic") ? "bg-[#2E4F21] text-white" : "bg-white"
-          } px-2 py-1 border rounded`}
+            editor.isActive("italic")
+              ? "bg-[#2E4F21] text-white"
+              : "bg-white text-[#1f3318]"
+          } px-2 py-1 border border-neutral-200 rounded`}
         >
           I
         </button>
@@ -51,15 +62,14 @@ const TiptapEditor = ({ description, setDescription }) => {
           className={`${
             editor.isActive("bulletList")
               ? "bg-[#2E4F21] text-white"
-              : "bg-white"
-          } px-2 py-1 border rounded`}
+              : "bg-white text-[#1f3318]"
+          } px-2 py-1 border border-neutral-200 rounded`}
         >
           • List
         </button>
       </div>
 
-    
-      <div className="border border-t-0 text-white rounded-b p-2 min-h-10">
+      <div className="border border-t-0 border-neutral-200 text-[#1f3318] bg-white rounded-b-lg p-3 min-h-32">
         <EditorContent editor={editor} />
       </div>
     </div>

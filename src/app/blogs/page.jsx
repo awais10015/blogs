@@ -1,194 +1,126 @@
 "use client";
-import React, { useContext, useState, useMemo } from "react";
 
+import { Suspense, useContext, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import blogContext from "@/context/blogContext";
-import TiptapEditor from "@/components/TiptapEditor";
+import { useAuth } from "@/context/AuthContext";
+import PostCard from "@/components/PostCard";
 
-import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { Lens } from "@/components/magicui/lens";
+function BlogsList() {
+  const { blogs } = useContext(blogContext);
+  const { currentUser } = useAuth();
+  const searchParams = useSearchParams();
+  const [query, setQuery] = useState("");
+  const [activeTag, setActiveTag] = useState("");
 
-import { message, Space } from "antd";
+  useEffect(() => {
+    const tag = searchParams.get("tag");
+    if (tag) setActiveTag(tag);
+  }, [searchParams]);
 
-const Page = () => {
-  const [messageApi, contextHolder] = message.useMessage();
-  const [previewBlog, setPreviewBlog] = useState(null);
-
-  const { blogs, setBlogs } = useContext(blogContext);
-  const [description, setDescription] = useState("");
-
-  const success = () => {
-    messageApi.open({
-      type: "success",
-      content: "Blog Successfully Added",
+  const visible = useMemo(() => {
+    return blogs.filter((post) => {
+      const isOwner = currentUser && post.authorId === currentUser.id;
+      if (post.status !== "published" && !isOwner) return false;
+      if (activeTag && !(post.tags || []).includes(activeTag)) return false;
+      if (!query.trim()) return true;
+      const hay = `${post.title} ${post.subtitle} ${(post.tags || []).join(" ")}`.toLowerCase();
+      return hay.includes(query.trim().toLowerCase());
     });
-  };
+  }, [blogs, currentUser, query, activeTag]);
 
-  const addBlog = (e) => {
-    e.preventDefault();
-
-    const form = e.target;
-    const title = form.title.value;
-    const subtitle = form.subtitle.value;
-    // const description = form.description.value;
-    const imageFile = form.image.files[0];
-
-    if (!imageFile) {
-      alert("Please select an image.");
-      return;
-    }
-
-    const imageURL = URL.createObjectURL(imageFile);
-
-    const newBlog = {
-      id: Date.now(),
-      Title: title,
-      Subtitle: subtitle,
-      Description: description,
-      Image: imageURL,
-    };
-
-    setBlogs((prev) => [...prev, newBlog]);
-    success();
-    form.reset();
-    setDescription("");
-  };
-
-  const contextValue = useMemo(() => ({ name: "Ant Design" }), []);
+  const tags = useMemo(() => {
+    const set = new Set();
+    blogs.forEach((post) => {
+      if (post.status === "published" || post.authorId === currentUser?.id) {
+        (post.tags || []).forEach((tag) => set.add(tag));
+      }
+    });
+    return [...set].sort();
+  }, [blogs, currentUser]);
 
   return (
-    <>
-      {contextHolder}
-      <div className="h-23 bg-[#D2F8DC] w-full">{}</div>
-      <div className="relative bg-[#D2F8DC] p-10">
-        <div className="grid gap-6 md:grid-cols-2 pl-0 sm:pl-20 md:pl-10">
-          {blogs.map((blog, index) => (
-            <Card
-              key={index}
-              className="hover:scale-110 transition-all duration-300 ease-in-out relative max-w-md bg-[#a0f1bd] shadow-none"
+    <div className="min-h-screen px-4 pt-40 pb-16 sm:px-6 sm:pt-28">
+      <div className="mx-auto max-w-6xl">
+        <header className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+          <div>
+            <h1 className="text-3xl font-bold text-[#2E4F21] sm:text-4xl dark:text-[#d2f8dc]">
+              All posts
+            </h1>
+            <p className="mt-2 text-[#2E4F21]/70 dark:text-neutral-300">
+              Search the archive, or write if you are signed in.
+            </p>
+          </div>
+          {currentUser ? (
+            <Link
+              href="/blogs/new"
+              className="rounded-full bg-[#2E4F21] px-4 py-2 text-sm text-white hover:bg-[#234018]"
             >
-              <CardHeader>
-                <Lens
-                  zoomFactor={2}
-                  lensSize={150}
-                  isStatic={false}
-                  ariaLabel="Zoom Area"
-                >
-                  <img
-                    src={blog.Image}
-                    alt="image placeholder"
-                    width={500}
-                    height={500}
-                  />
-                </Lens>
-              </CardHeader>
-              <CardContent>
-                <CardTitle className="text-2xl">{blog.Title}</CardTitle>
-                <CardDescription>{blog.Subtitle}</CardDescription>
-              </CardContent>
-              <CardFooter className="space-x-4">
-                <Button
-                  className="hover:scale-110 hover:bg-amber-50"
-                  variant="ghost"
-                  onClick={() => setPreviewBlog(blog)}
-                >
-                  Preview
-                </Button>
-                <Link href={`/blogs/${blog.id}`}>
-                  <Button className="hover:scale-110" variant="secondary">
-                    Learn More
-                  </Button>
-                </Link>
-              </CardFooter>
-            </Card>
-          ))}
+              Write
+            </Link>
+          ) : null}
+        </header>
+
+        <div className="mb-6">
+          <input
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder="Search titles, subtitles, tags…"
+            className="w-full rounded-xl border border-white/70 bg-white/90 p-3 text-[#1f3318] focus:outline-none focus:ring-2 focus:ring-[#2E4F21]/30 dark:border-white/10 dark:bg-[#1f3318]/80 dark:text-[#d2f8dc]"
+          />
         </div>
 
-        <form
-          onSubmit={addBlog}
-          className="space-y-4 mt-10 bg-[#2E4F21] sm:p-20 md:p-20 mb-10 w-full p-5 rounded-3xl"
-        >
-          <input
-            type="text"
-            name="title"
-            placeholder="Add Blog Title"
-            required
-            className="w-full p-2 border placeholder:text-white rounded hover:scale-105 hover:bg-white hover:placeholder:text-black transition-all duration-300 ease-in-out"
-          />
-          <input
-            type="text"
-            name="subtitle"
-            placeholder="Add Blog Sub Title"
-            required
-            className="w-full p-3 placeholder:text-white hover:placeholder:text-black rounded border border-gray-30 focus:border-transparent hover:scale-105 hover:bg-white transition-all duration-300 ease-in-out"
-          />
-          <TiptapEditor
-            description={description}
-            placeholder="Add Description"
-            setDescription={setDescription}
-          />
-
-          <input
-            type="file"
-            name="image"
-            accept="image/*"
-            required
-            className="w-full border border-gray-600 p-2 placeholder:text-white hover:scale-105 hover:bg-white transition-all duration-300 ease-in-out rounded"
-          />
-          <Space>
+        {tags.length ? (
+          <div className="mb-8 flex flex-wrap gap-2">
             <button
-              type="secondary"
-              className="px-4 py-2 bg-gray-900 text-white rounded-2xl hover:bg-gray-500
-            hover:scale-108 transition-all duration-200 ease-in-out"
+              type="button"
+              onClick={() => setActiveTag("")}
+              className={`rounded-full px-3 py-1 text-sm ${
+                !activeTag
+                  ? "bg-[#2E4F21] text-white"
+                  : "bg-white/80 text-[#2E4F21] dark:bg-white/10 dark:text-[#d2f8dc]"
+              }`}
             >
-              Add Blog
+              All
             </button>
-          </Space>
-        </form>
+            {tags.map((tag) => (
+              <button
+                key={tag}
+                type="button"
+                onClick={() => setActiveTag(tag === activeTag ? "" : tag)}
+                className={`rounded-full px-3 py-1 text-sm ${
+                  activeTag === tag
+                    ? "bg-[#2E4F21] text-white"
+                    : "bg-white/80 text-[#2E4F21] dark:bg-white/10 dark:text-[#d2f8dc]"
+                }`}
+              >
+                {tag}
+              </button>
+            ))}
+          </div>
+        ) : null}
 
-        {previewBlog && (
-          <>
-            <Card className="fixed z-50 top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-2xl bg-white p-4 rounded-xl shadow-xl">
-              <CardHeader className="flex justify-between items-center">
-                <Button
-                  className="hover:scale-108 transition-all duration-200 ease-in-out"
-                  variant="ghost"
-                  onClick={() => setPreviewBlog(null)}
-                >
-                  Close
-                </Button>
-              </CardHeader>
-
-              <CardContent className="flex flex-col gap-4">
-                <Lens isStatic position={{ x: 260, y: 150 }}>
-                  <img
-                    src={previewBlog.Image}
-                    alt="image placeholder"
-                    className="w-full h-64 object-cover rounded"
-                  />
-                </Lens>
-
-                <CardTitle className="text-3xl">{previewBlog.Title}</CardTitle>
-                <CardDescription className="text-lg text-gray-700">
-                  {previewBlog.Subtitle}
-                </CardDescription>
-              </CardContent>
-
-              <CardFooter className="space-x-4"></CardFooter>
-            </Card>
-          </>
+        {visible.length === 0 ? (
+          <p className="rounded-2xl bg-white/80 p-8 text-center text-neutral-600 dark:bg-[#1f3318]/70 dark:text-neutral-300">
+            No posts match that search.
+          </p>
+        ) : (
+          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            {visible.map((post) => (
+              <PostCard key={post.id} post={post} />
+            ))}
+          </div>
         )}
       </div>
-    </>
+    </div>
   );
-};
+}
 
-export default Page;
+export default function BlogsPage() {
+  return (
+    <Suspense>
+      <BlogsList />
+    </Suspense>
+  );
+}

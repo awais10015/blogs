@@ -1,37 +1,86 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Blogs
 
-## Getting Started
+A Next.js blog app for reading, searching, and writing posts. Data is stored in the browser (localStorage)—no backend database.
 
-First, run the development server:
+## Features
+
+- Home page with featured posts
+- Post archive at `/blogs` with search and tag filters
+- Individual post pages with sanitized HTML content
+- Rich-text editor (TipTap) for creating and editing posts
+- Draft and published post statuses
+- Comments (stored locally)
+- Light/dark theme
+- Client-side auth with cookie-gated write routes
+
+## Tech stack
+
+- [Next.js 15](https://nextjs.org/) (App Router)
+- React 19
+- Tailwind CSS 4
+- TipTap, DOMPurify, Sonner, next-themes
+
+## Getting started
+
+### Prerequisites
+
+- Node.js 20+ (recommended)
+- npm
+
+### Install and run
 
 ```bash
+cd blogs
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000).
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### Other scripts
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+| Command         | Description            |
+| --------------- | ---------------------- |
+| `npm run build` | Production build       |
+| `npm run start` | Serve production build |
+| `npm run lint`  | ESLint (Next.js config)|
 
-## Learn More
+## Demo account
 
-To learn more about Next.js, take a look at the following resources:
+A seed editor user is always available:
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+| Field    | Value               |
+| -------- | ------------------- |
+| Email    | `editor@blogs.test` |
+| Password | `asdf`              |
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+You can also register a new account from `/register`. Sessions and posts persist in **localStorage** for that browser only.
 
-## Deploy on Vercel
+## Routes
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+| Path                 | Description                    |
+| -------------------- | ------------------------------ |
+| `/`                  | Landing / featured posts       |
+| `/blogs`             | All posts (search and tags)    |
+| `/blogs/[slug]`      | Read a post                    |
+| `/blogs/new`         | Create post (login required)   |
+| `/blogs/[slug]/edit` | Edit post (login required)     |
+| `/login`, `/register`| Auth                           |
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
-# blogs
+Middleware redirects unauthenticated users from write routes to `/login`.
+
+## Project structure
+
+```
+src/
+  app/              # App Router pages
+  components/       # UI, PostForm, TipTap editor, etc.
+  context/          # Auth and blog state
+  lib/              # posts helpers, storage, sanitize
+  middleware.js     # Protects new/edit routes
+```
+
+## Notes
+
+- This is a **demo/local-first** app: clearing site data removes posts, users, and comments.
+- Passwords are stored in plain text in localStorage—not suitable for production as-is.
